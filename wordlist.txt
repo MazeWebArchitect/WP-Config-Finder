@@ -1,0 +1,12 @@
+.bak
+_bak
+.back
+_back
+.backup
+_backup
+.org
+_org
+.orig
+_orig
+.original
+_original
