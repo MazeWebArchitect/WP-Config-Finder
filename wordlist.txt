@@ -1,5 +1,11 @@
+.bu
+_bu
 .bak
 _bak
+.bac
+_bac
+.bup
+_bup
 .back
 _back
 .backup
@@ -8,5 +14,9 @@ _backup
 _org
 .orig
 _orig
+.origin
+_origin
 .original
 _original
+.test
+_test
