@@ -13,6 +13,12 @@ urlamount=$(grep -c "" $urllist)
 testiteration=0
 wordlist="wordlist.txt"
 findingslist="findings.txt"
+timefolder=$(date +"%Y-%m-%d_%H-%M-%S")
+filefolder="findings/"$timefolder
+if [ ! -d "findings" ]; then
+  mkdir "findings"
+fi
+
 
 ### FUNCTIONS
 # Requesting the page with the desired ending
@@ -22,7 +28,6 @@ function check_ending {
   req=$(curl -L -s -i -o /dev/null -w "%{http_code}\n" $url"/wp-config.php"$ending)
   echo $req
 }
-
 
 # Generating  a 50-character random string and adding it
 # to the url parameter and checks if the response is still a 200
@@ -83,7 +88,10 @@ do
         check=$(check_ending $url $ending)
 	if [[ "$check" = 200 ]]; then
 	  echo -e ${GREEN}$check " | " $url"/wp-config.php"$ending "<<<< | Found something${SC}"
-	  echo $url"/wp-config.php"$ending >> $findingslist
+	  if [ ! -d "$filefolder" ]; then
+            mkdir $filefolder
+	  fi
+	  echo $url"/wp-config.php"$ending >> $filefolder/$findingslist
 	else
 	  echo $check " | " $url"/wp-config.php"$ending " | Nothing here"
 	fi
@@ -96,10 +104,10 @@ done <  <(grep . "${urllist}")
 
 echo
 echo "----------------------------------------"
-if [[ -f "$findingslist" ]]; then
+if [[ -f "$filefolder/$findingslist" ]]; then
   echo
   echo -e ${ORANGE}">>>> Findings <<<<"
-  cat $findingslist
+  cat $filefolder/$findingslist
   echo -e ${SC}
 else
     echo ${RED}"nothing found ;(${SC}"
