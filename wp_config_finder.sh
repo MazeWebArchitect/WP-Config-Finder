@@ -29,7 +29,7 @@ function check_ending {
   echo $req
 }
 
-# Generating  a 50-character random string and adding it
+# Generating a 50-character random string and adding it
 # to the url parameter and checks if the response is still a 200
 # if so it declares the website as "fake", meaning it will always return a 200
 # even on 404 pages, for example by using a plugin (404 to frontpage or similar)
@@ -98,7 +98,7 @@ do
       fi
     done < <(grep . "${wordlist}")
   else 
-    echo "No response from remote host, $url seems to be dead, is password protected or might be blocking our IP"
+    echo "No response from remote host, $url it is either dead, is password protected or might be blocking our IP"
   fi
 done <  <(grep . "${urllist}")
 
