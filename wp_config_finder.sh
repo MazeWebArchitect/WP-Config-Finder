@@ -7,13 +7,14 @@ BLUE='\033[0;34m'
 ORANGE='\033[0;33m'
 SC='\033[0m' # Stop Color
 
-### Files
+### Files and globals
 urllist="urllist.txt"
+urlamount=$(grep -c "" $urllist)
+testiteration=0
 wordlist="wordlist.txt"
 findingslist="findings.txt"
 
 ### FUNCTIONS
-
 # Requesting the page with the desired ending
 function check_ending {
   url=$1
@@ -39,14 +40,15 @@ function test_response_with_long_random_string {
   echo "$fakeresponse"
 }
 
-
+echo "Starting, there are $urlamount urls to scan"
 ### MAIN
 # As long as their is a url in the url list, run this
 while read url
 do
- echo
+  (( testiteration++ ))
+  echo
   echo "---------------------"
-  echo "Testing $url"
+  echo "Testing $url | $testiteration out of $urlamount"
   echo "---------------------"
   alivecheck=$(curl -L -s -i -o /dev/null -w "%{http_code}\n" --connect-timeout 10 $url)
   fake=""
