@@ -18,6 +18,37 @@ filefolder = "findings"
 findingslist = "findings.txt"
 wordlist = "wordlist.txt"
 
+def randomize_headers():
+    """
+    Sends a GET request to the specified URL with a randomized User-Agent header.
+    
+    The User-Agent list is updated via https://www.useragents.me/.
+    
+    Parameters:
+    url (str): The URL to send the request to.
+    
+    Returns:
+    response: The HTTP response returned by the server.
+    """
+    try:
+        # Lists updated via https://www.useragents.me/
+        user_agent_list = [
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36 Edg/118.0.2088.69',
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0',
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Safari/605.1.1'
+          ]
+        # Pick a random user agent
+        user_agent = random.choice(user_agent_list)
+        # Set the headers 
+        headers = {'User-Agent': user_agent}
+        return headers
+        
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None
+
 
 def execute_curl_command(*args):
     """
@@ -34,7 +65,9 @@ def execute_curl_command(*args):
 
     """
     try:
-        command = ["curl"] + list(args)
+        headers = randomize_headers()
+        header_args = sum([["-H", f"{key}: {value}"] for key, value in headers.items()], [])
+        command = ["curl"] + header_args + list(args)
         output = subprocess.check_output(command, stderr=subprocess.STDOUT).decode("utf-8")
         return output.strip()
 
@@ -142,7 +175,8 @@ def request_page(full_url):
 
     """
     try:
-        response = requests.get(full_url)
+        headers = randomize_headers()
+        response = requests.get(full_url, headers)
         return str(response.status_code)
 
     except requests.RequestException as e:
