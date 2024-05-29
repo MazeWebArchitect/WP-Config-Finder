@@ -176,8 +176,8 @@ def request_page(full_url):
     """
     try:
         headers = randomize_headers()
-        response = requests.get(full_url, headers)
-        return str(response.status_code)
+        response = requests.get(full_url, headers=headers)
+        return str(response.status_code) if response.status_code != 403 else None
 
     except requests.RequestException as e:
         # Handle the request exception gracefully
@@ -204,7 +204,7 @@ def process_website(url):
 
     """
     try:
-        alive_check = execute_curl_command("-L", "-s", "-i", "-o", "/dev/null", "-w", "%{http_code}\\n", f"{url}")
+        alive_check = execute_curl_command("-I", "-L", "-s", "-o", "/dev/null", "-w", "%{http_code}\\n", f"{url}")
         if alive_check == "200":
             print(BLUE + alive_check + f" | {url} is alive, let's scan it" + SC)
 
@@ -224,26 +224,25 @@ def process_website(url):
                             future = executor.submit(request_page, full_url.strip())
                             check = future.result()
 
-                            if not found_fake_response:
-                                if check == "200":
+                            if not found_fake_response and check == "200":
+                                print(
+                                    BLUE + check + f" | {full_url} <<<< | Found something - running fakecheck" + SC)
+                                future_fake = executor.submit(test_response_with_long_random_string, url.strip())
+                                fakecheck = future_fake.result()
+                                if fakecheck == "true":
+                                    found_fake_response = True
+                                    print(ORANGE + f">>>> ❌ Fakecheck failed")
                                     print(
-                                        BLUE + check + f" | {full_url} <<<< | Found something - running fakecheck" + SC)
-                                    future_fake = executor.submit(test_response_with_long_random_string, url.strip())
-                                    fakecheck = future_fake.result()
-                                    if fakecheck == "true":
-                                        found_fake_response = True
-                                        print(ORANGE + f">>>> ❌ Fakecheck failed")
-                                        print(
-                                        RED + f">>>> {url} responds to every request with a 200, maybe because of a plugin: >> ignoring it" + SC)
-                                    else:
-                                        print(ORANGE + f">>>> ✅ Fakecheck passed")
+                                    RED + f">>>> {url} responds to every request with a 200, maybe because of a plugin: >> ignoring it" + SC)
+                                else:
+                                    print(ORANGE + f">>>> ✅ Fakecheck passed")
                             if not found_fake_response and check == "200":
                                 print(GREEN + check + f" | {full_url} <<<< | Found something" + SC)
                                 if not os.path.exists(filefolder):
                                     os.mkdir(filefolder)
                                 with open(filefolder + "/" + findingslist, 'a') as findings:
                                     findings.write(f"{full_url}\n")
-                            elif check != "":
+                            elif check is not None:
                                 print(check + f" | {full_url} | Nothing here")
         else:
             print(RED + alive_check + f" | {url} is not reachable or blocking our IP" + SC)
