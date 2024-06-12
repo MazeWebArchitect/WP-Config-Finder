@@ -236,12 +236,15 @@ def process_website(url):
                                     RED + f">>>> {url} responds to every request with a 200, maybe because of a plugin: >> ignoring it" + SC)
                                 else:
                                     print(ORANGE + f">>>> ✅ Fakecheck passed")
-                            if not found_fake_response and check == "200":
-                                print(GREEN + check + f" | {full_url} <<<< | Found something" + SC)
-                                if not os.path.exists(filefolder):
-                                    os.mkdir(filefolder)
-                                with open(filefolder + "/" + findingslist, 'a') as findings:
-                                    findings.write(f"{full_url}\n")
+                                    content_check = check_content_for_empty_or_forbidden(full_url)
+                                    if content_check:
+                                        print(RED + f">>>> {full_url} is empty or forbidden, ignoring it" + SC)
+                                    else:
+                                        print(GREEN + check + f" | {full_url} <<<< | Found something" + SC)
+                                        if not os.path.exists(filefolder):
+                                            os.mkdir(filefolder)
+                                        with open(filefolder + "/" + findingslist, 'a') as findings:
+                                            findings.write(f"{full_url}\n")
                             elif check is not None:
                                 print(check + f" | {full_url} | Nothing here")
         else:
@@ -256,6 +259,7 @@ def process_website(url):
         # Handle other exceptions
         print(f"An unexpected error occurred while processing the website: {e}")
         raise e
+
 
 
 def process_urls(urls):
@@ -290,6 +294,35 @@ def process_urls(urls):
         print(f"An unexpected error occurred while processing the URLs: {e}")
         raise e
 
+def check_content_for_empty_or_forbidden(url):
+    """
+    Check if the content of a URL is empty or contains the word 'forbidden'.
+
+    Args:
+        url (str): The URL to check.
+
+    Returns:
+        bool: True if the content is empty or contains 'forbidden', otherwise False.
+
+    Raises:
+        requests.RequestException: If an error occurs during the HTTP request.
+
+    """
+    try:
+        headers = randomize_headers()
+        response = requests.get(url, headers=headers)
+        content = response.text.lower()
+        return not content or 'forbidden' in content
+
+    except requests.RequestException as e:
+        # Handle the request exception gracefully
+        print(f"An error occurred while checking the content of the URL: {e}")
+        raise e
+
+    except Exception as e:
+        # Handle other exceptions
+        print(f"An unexpected error occurred while checking the content of the URL: {e}")
+        raise e
 
 def main():
     """
